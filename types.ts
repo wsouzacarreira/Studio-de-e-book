@@ -1,4 +1,3 @@
-
 export enum ToneOfVoice {
   PROFISSIONAL = 'Profissional',
   AMIGAVEL = 'Amigável',
@@ -26,10 +25,4 @@ export interface EbookForm {
   pages: number;
 }
 
-// FIX: Add Source type definition for web references. This resolves the error in SourcesList.tsx.
-export interface Source {
-  web: {
-    uri: string;
-    title: string;
-  };
-}
+// Removed Source type definition

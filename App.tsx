@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useState } from 'react';
 import { Header } from './components/Header';
@@ -8,14 +7,12 @@ import { SelectField } from './components/SelectField';
 import { ActionButton } from './components/ActionButton';
 import { PreviewArea } from './components/PreviewArea';
 import { LoadingSpinner } from './components/LoadingSpinner';
-// FIX: Import Source type and SourcesList component to display web references.
-import { EbookForm, ToneOfVoice, FontFamily, Source } from './types';
+import { EbookForm, ToneOfVoice, FontFamily } from './types'; // Removed Source type
 import { TONE_OPTIONS, FONT_OPTIONS } from './constants';
 import { generateEbookContent } from './services/geminiService';
 import { saveEbook } from './services/supabaseService';
 import { downloadPdf } from './services/pdfService';
 import { ZapIcon, SaveIcon, DownloadIcon, RotateCcwIcon } from './components/Icons';
-import { SourcesList } from './components/SourcesList';
 
 const initialState: EbookForm = {
     subject: '',
@@ -32,8 +29,7 @@ const initialState: EbookForm = {
 const App: React.FC = () => {
     const [formData, setFormData] = useState<EbookForm>(initialState);
     const [generatedContent, setGeneratedContent] = useState<string>('');
-    // FIX: Add state to store sources from Google Search grounding.
-    const [sources, setSources] = useState<Source[]>([]);
+    // Removed sources state
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [saveMessage, setSaveMessage] = useState<string>('');
@@ -55,13 +51,12 @@ const App: React.FC = () => {
         setSaveMessage('');
         setIsLoading(true);
         setGeneratedContent('');
-        // FIX: Reset sources before generating new content.
-        setSources([]);
+        // Removed sources reset
         try {
-            // FIX: Destructure content and sources from the service response.
-            const { content, sources } = await generateEbookContent(formData);
+            // Adjusted to only destructure content
+            const { content } = await generateEbookContent(formData);
             setGeneratedContent(content);
-            setSources(sources);
+            // Removed setSources(sources);
         } catch (err: any) {
             setError(err.message || 'Ocorreu um erro desconhecido.');
         } finally {
@@ -75,7 +70,6 @@ const App: React.FC = () => {
         try {
             await saveEbook(formData, generatedContent);
             setSaveMessage('E-book salvo com sucesso! (Simulado)');
-        // FIX: Corrected syntax for catch block by adding curly braces.
         } catch (err: any) {
             setError(err.message || 'Falha ao salvar o e-book.');
             setSaveMessage('');
@@ -91,8 +85,7 @@ const App: React.FC = () => {
     const handleReset = () => {
         setFormData(initialState);
         setGeneratedContent('');
-        // FIX: Reset sources on form reset.
-        setSources([]);
+        // Removed sources reset
         setError('');
         setSaveMessage('');
         setIsLoading(false);
@@ -214,8 +207,6 @@ const App: React.FC = () => {
                     </div>
                     
                     <PreviewArea content={generatedContent} font={formData.font} />
-                    {/* FIX: Render the SourcesList component to display web references. */}
-                    <SourcesList sources={sources} />
                 </main>
             </div>
         </div>

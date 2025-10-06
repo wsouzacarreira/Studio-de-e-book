@@ -1,11 +1,11 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { EbookForm, Source } from '../types';
+import { EbookForm } from '../types'; // Removed Source from import
 
-export const generateEbookContent = async (formData: EbookForm): Promise<{ content: string, sources: Source[] }> => {
+export const generateEbookContent = async (formData: EbookForm): Promise<{ content: string }> => { // Adjusted return type
   if (!process.env.API_KEY) {
     return Promise.resolve({
       content: "API Key não configurada. Por favor, adicione sua chave API para testar a funcionalidade. Este é um conteúdo de exemplo para demonstração, gerado com a nova estrutura.\n\nCapa\n\nTítulo: Um Guia de Exemplo\n\nSubtítulo: Demonstrando a nova estrutura de prompt\n\nPrefácio\n\nEste e-book serve como uma demonstração da estrutura aprimorada...",
-      sources: []
+      // Removed sources from the mock return
     });
   }
 
@@ -79,8 +79,8 @@ export const generateEbookContent = async (formData: EbookForm): Promise<{ conte
         },
     });
     
-    const sources = (response.candidates?.[0]?.groundingMetadata?.groundingChunks as Source[]) || [];
-    return { content: response.text, sources };
+    // Removed sources extraction
+    return { content: response.text };
 
   } catch (error) {
     console.error("Error calling Gemini API:", error);
