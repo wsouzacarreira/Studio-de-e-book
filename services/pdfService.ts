@@ -1,4 +1,3 @@
-
 import { FontFamily } from '../types';
 declare const jspdf: any;
 
@@ -39,11 +38,24 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
     
     let cursorY = margin;
     const lineHeight = 6; // Adjust line height for 11pt font
+    let pageNumber = 1;
+
+    // Function to add page number
+    const addPageNumber = (pageNum: number) => {
+        doc.setFontSize(9); // Smaller font for page number
+        doc.text(`${pageNum}`, pageWidth / 2, pageHeight - margin / 2, { align: 'center' });
+        doc.setFontSize(11); // Reset to content font size
+    };
+
+    // Add page number to the first page
+    addPageNumber(pageNumber);
 
     lines.forEach((line: string) => {
         if (cursorY + lineHeight > pageHeight - margin) { // Check if new page is needed
             doc.addPage();
-            cursorY = margin;
+            pageNumber++;
+            addPageNumber(pageNumber); // Add page number to new page
+            cursorY = margin; // Reset cursorY for new page
         }
         doc.text(line, margin, cursorY);
         cursorY += lineHeight; 
