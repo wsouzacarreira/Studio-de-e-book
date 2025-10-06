@@ -1,0 +1,5 @@
+{
+  "name": "Gerador de E-book com IA",
+  "description": "Uma aplicação que permite ao usuário criar, salvar e baixar e-books automaticamente usando a API Gemini para geração de conteúdo.",
+  "requestFramePermissions": []
+}
