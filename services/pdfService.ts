@@ -14,8 +14,18 @@ const mapFontToPdf = (font: FontFamily): string => {
 }
 
 export const downloadPdf = (content: string, font: FontFamily, title: string) => {
-    if (!content) return;
+    if (!content) {
+        console.warn("Content is empty, cannot generate PDF.");
+        return;
+    }
     
+    // Ensure jspdf is available
+    if (typeof jspdf === 'undefined' || !jspdf.jsPDF) {
+        console.error("jsPDF library not loaded.");
+        // In a real app, you might want to show a user-facing error here
+        return;
+    }
+
     // eslint-disable-next-line new-cap
     const doc = new jspdf.jsPDF({
         orientation: 'p',
@@ -31,36 +41,38 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
     const pageHeight = doc.internal.pageSize.getHeight();
     const usableWidth = pageWidth - 2 * margin;
 
-    // Use a smaller font size for better fitting
     doc.setFontSize(11);
 
     const lines = doc.splitTextToSize(content, usableWidth);
     
     let cursorY = margin;
-    const lineHeight = 6; // Adjust line height for 11pt font
+    const lineHeight = 6; 
     let pageNumber = 1;
 
-    // Function to add page number
+    // Function to add page number at the bottom center
     const addPageNumber = (pageNum: number) => {
-        doc.setFontSize(9); // Smaller font for page number
-        // Adjusted vertical position to be 10mm from the bottom edge
+        doc.setFontSize(9); 
         doc.text(`${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-        doc.setFontSize(11); // Reset to content font size
+        doc.setFontSize(11); 
     };
 
-    // Add page number to the first page
-    addPageNumber(pageNumber);
-
+    // Add content and page numbers
     lines.forEach((line: string) => {
-        if (cursorY + lineHeight > pageHeight - margin) { // Check if new page is needed
+        // Check if the current line will exceed the page height
+        if (cursorY + lineHeight > pageHeight - margin) {
+            // Add page number to the *current* page before adding a new one
+            addPageNumber(pageNumber); 
+            
             doc.addPage();
             pageNumber++;
-            addPageNumber(pageNumber); // Add page number to new page
             cursorY = margin; // Reset cursorY for new page
         }
         doc.text(line, margin, cursorY);
         cursorY += lineHeight; 
     });
+
+    // Add page number to the very last page after all content is rendered
+    addPageNumber(pageNumber);
     
     const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     doc.save(`${safeTitle || 'ebook'}.pdf`);
