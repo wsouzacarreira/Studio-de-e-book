@@ -21,13 +21,16 @@ export const generateEbookContent = async (formData: EbookForm): Promise<{ conte
 - Especialidade do Autor: ${formData.authorSpecialty}
 - Dedicatória: ${formData.dedication || 'Nenhuma'}`;
 
+  // Modificado para enfatizar a quantidade de páginas
   const estrutura = `
 - Número de Capítulos: ${formData.chapters}
-- Número Aproximado de Páginas: ${formData.pages}`;
+- O conteúdo total deve ter aproximadamente ${formData.pages} páginas.`;
 
   const prompt = `
     Você é um gerador de e-books didáticos.
     Sua tarefa é criar um e-book bem estruturado, organizado e pronto para diagramação.
+    O conteúdo deve ser detalhado e abrangente, visando preencher aproximadamente ${formData.pages} páginas.
+    Cada capítulo deve ser substancial para contribuir para o total de páginas.
     Use as informações abaixo preenchidas pelo usuário:
 
     📖 Tema: ${tema}
@@ -48,6 +51,7 @@ export const generateEbookContent = async (formData: EbookForm): Promise<{ conte
           - Conteúdo claro e didático
           - Exemplo prático ou analogia
           - Pergunta de reflexão ao final
+          - O conteúdo de cada capítulo deve ser extenso e detalhado para contribuir para o número total de páginas solicitado.
     5.  **Conclusão**
         - Síntese geral do conteúdo
         - Checklist prático com principais aprendizados
