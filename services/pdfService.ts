@@ -22,7 +22,6 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
     // Ensure jspdf is available
     if (typeof jspdf === 'undefined' || !jspdf.jsPDF) {
         console.error("jsPDF library not loaded.");
-        // In a real app, you might want to show a user-facing error here
         return;
     }
 
@@ -52,27 +51,25 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
     // Function to add page number at the bottom center
     const addPageNumber = (pageNum: number) => {
         doc.setFontSize(9); 
-        doc.text(`${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        // Adjusted vertical position to be 15mm from the bottom edge for more clearance
+        doc.text(`${pageNum}`, pageWidth / 2, pageHeight - 15, { align: 'center' });
         doc.setFontSize(11); 
     };
 
-    // Add content and page numbers
+    // Add page number to the first page before any content is added
+    addPageNumber(pageNumber);
+
     lines.forEach((line: string) => {
         // Check if the current line will exceed the page height
         if (cursorY + lineHeight > pageHeight - margin) {
-            // Add page number to the *current* page before adding a new one
-            addPageNumber(pageNumber); 
-            
-            doc.addPage();
-            pageNumber++;
+            doc.addPage(); // Add a new page
+            pageNumber++; // Increment page number
+            addPageNumber(pageNumber); // Add page number to the *new* page
             cursorY = margin; // Reset cursorY for new page
         }
         doc.text(line, margin, cursorY);
         cursorY += lineHeight; 
     });
-
-    // Add page number to the very last page after all content is rendered
-    addPageNumber(pageNumber);
     
     const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     doc.save(`${safeTitle || 'ebook'}.pdf`);
