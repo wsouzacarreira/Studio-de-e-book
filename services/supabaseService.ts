@@ -1,5 +1,5 @@
-
 import { EbookForm } from '../types';
+import { supabase } from '../lib/supabaseClient'; // Importa o cliente Supabase real
 
 export const saveEbook = async (formData: EbookForm, content: string): Promise<{ success: true }> => {
   const dataToSave = {
@@ -15,13 +15,20 @@ export const saveEbook = async (formData: EbookForm, content: string): Promise<{
     data_criacao: new Date().toISOString(),
   };
 
-  console.log("Simulando salvamento no Supabase com os seguintes dados:");
-  console.log(dataToSave);
+  try {
+    const { data, error } = await supabase
+      .from('ebooks') // Nome da tabela no Supabase
+      .insert([dataToSave]);
 
-  // Simulating a successful API call
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({ success: true });
-    }, 500);
-  });
+    if (error) {
+      console.error("Erro ao salvar no Supabase:", error);
+      throw new Error(`Falha ao salvar o e-book: ${error.message}`);
+    }
+
+    console.log("E-book salvo com sucesso no Supabase:", data);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Erro inesperado ao salvar e-book:", err);
+    throw new Error(err.message || 'Ocorreu um erro desconhecido ao salvar o e-book.');
+  }
 };
