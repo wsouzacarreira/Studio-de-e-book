@@ -1,7 +1,9 @@
-import { EbookForm } from '../types';
-import { supabase } from '../src/lib/supabaseClient'; // Caminho corrigido
+"use client";
 
-export const saveEbook = async (formData: EbookForm, content: string): Promise<{ success: true }> => {
+import { EbookForm } from '../types';
+import { supabase } from '../src/lib/supabaseClient';
+
+export const saveEbook = async (formData: EbookForm, content: string, userId: string): Promise<{ success: true }> => {
   const dataToSave = {
     titulo: formData.subject,
     publico: formData.audience,
@@ -13,11 +15,12 @@ export const saveEbook = async (formData: EbookForm, content: string): Promise<{
     especialidade: formData.authorSpecialty,
     dedicatoria: formData.dedication,
     data_criacao: new Date().toISOString(),
+    user_id: userId, // Associar o e-book ao ID do usuário
   };
 
   try {
     const { data, error } = await supabase
-      .from('ebooks') // Nome da tabela no Supabase
+      .from('ebooks')
       .insert([dataToSave]);
 
     if (error) {

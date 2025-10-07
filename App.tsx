@@ -1,5 +1,8 @@
-import React from 'react';
-import { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { Session, User } from '@supabase/supabase-js';
+import { supabase } from './src/lib/supabaseClient';
 import { Header } from './components/Header';
 import { Card } from './components/Card';
 import { InputField } from './components/InputField';
@@ -7,12 +10,13 @@ import { SelectField } from './components/SelectField';
 import { ActionButton } from './components/ActionButton';
 import { PreviewArea } from './components/PreviewArea';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { EbookForm, ToneOfVoice, FontFamily } from './types'; // Removed Source type
+import { EbookForm, ToneOfVoice, FontFamily } from './types';
 import { TONE_OPTIONS, FONT_OPTIONS } from './constants';
 import { generateEbookContent } from './services/geminiService';
 import { saveEbook } from './services/supabaseService';
 import { downloadPdf } from './services/pdfService';
-import { ZapIcon, SaveIcon, DownloadIcon, RotateCcwIcon } from './components/Icons';
+import { ZapIcon, SaveIcon, DownloadIcon, RotateCcwIcon, LogOutIcon } from './components/Icons';
+import { AuthForm } from './components/AuthForm';
 
 const initialState: EbookForm = {
     subject: '',
@@ -29,10 +33,27 @@ const initialState: EbookForm = {
 const App: React.FC = () => {
     const [formData, setFormData] = useState<EbookForm>(initialState);
     const [generatedContent, setGeneratedContent] = useState<string>('');
-    // Removed sources state
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [saveMessage, setSaveMessage] = useState<string>('');
+    const [session, setSession] = useState<Session | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session?.user || null);
+        });
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session?.user || null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -51,12 +72,9 @@ const App: React.FC = () => {
         setSaveMessage('');
         setIsLoading(true);
         setGeneratedContent('');
-        // Removed sources reset
         try {
-            // Adjusted to only destructure content
             const { content } = await generateEbookContent(formData);
             setGeneratedContent(content);
-            // Removed setSources(sources);
         } catch (err: any) {
             setError(err.message || 'Ocorreu um erro desconhecido.');
         } finally {
@@ -68,8 +86,11 @@ const App: React.FC = () => {
         setError('');
         setSaveMessage('Salvando...');
         try {
-            await saveEbook(formData, generatedContent);
-            setSaveMessage('E-book salvo com sucesso! (Simulado)');
+            if (!user) {
+                throw new Error('Você precisa estar logado para salvar um e-book.');
+            }
+            await saveEbook(formData, generatedContent, user.id);
+            setSaveMessage('E-book salvo com sucesso!');
         } catch (err: any) {
             setError(err.message || 'Falha ao salvar o e-book.');
             setSaveMessage('');
@@ -85,16 +106,45 @@ const App: React.FC = () => {
     const handleReset = () => {
         setFormData(initialState);
         setGeneratedContent('');
-        // Removed sources reset
         setError('');
         setSaveMessage('');
         setIsLoading(false);
     };
 
+    const handleLogout = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const { error: signOutError } = await supabase.auth.signOut();
+            if (signOutError) throw signOutError;
+            setGeneratedContent('');
+            setFormData(initialState);
+            setSaveMessage('Desconectado com sucesso.');
+        } catch (err: any) {
+            setError(err.message || 'Erro ao desconectar.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (!session) {
+        return (
+            <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+                <AuthForm onAuthSuccess={() => { /* O useEffect já lida com a atualização da sessão */ }} />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto">
                 <Header />
+                <div className="flex justify-end mb-4">
+                    <ActionButton color="gray" onClick={handleLogout} disabled={isLoading}>
+                        <LogOutIcon className="-ml-1 mr-2 h-5 w-5" />
+                        Sair ({user?.email})
+                    </ActionButton>
+                </div>
                 <main className="mt-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <Card title="1. Detalhes do Conteúdo">
