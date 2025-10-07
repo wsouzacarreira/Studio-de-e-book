@@ -43,7 +43,8 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
     // Function to add page number
     const addPageNumber = (pageNum: number) => {
         doc.setFontSize(9); // Smaller font for page number
-        doc.text(`${pageNum}`, pageWidth / 2, pageHeight - margin / 2, { align: 'center' });
+        // Adjusted vertical position to be 10mm from the bottom edge
+        doc.text(`${pageNum}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
         doc.setFontSize(11); // Reset to content font size
     };
 
