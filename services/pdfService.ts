@@ -1,18 +1,6 @@
 import { FontFamily } from '../types';
 declare const jspdf: any;
 
-const mapFontToPdf = (font: FontFamily): string => {
-    switch (font) {
-        case FontFamily.MERRIWEATHER:
-            return 'times'; // Serif
-        case FontFamily.INTER:
-        case FontFamily.ROBOTO:
-        case FontFamily.LATO:
-        default:
-            return 'helvetica'; // Sans-serif
-    }
-}
-
 export const downloadPdf = (content: string, font: FontFamily, title: string) => {
     if (!content) {
         console.warn("Content is empty, cannot generate PDF.");
@@ -32,15 +20,19 @@ export const downloadPdf = (content: string, font: FontFamily, title: string) =>
         format: 'a4'
     });
 
-    const pdfFont = mapFontToPdf(font);
-    doc.setFont(pdfFont);
+    let pdfFontName = 'Roboto'; // Usar Roboto como padrão, pois foi carregada com suporte a acentos
+    if (font === FontFamily.MERRIWEATHER) {
+        pdfFontName = 'times'; // Merriweather é uma fonte com serifa, 'times' é uma boa correspondência visual
+    }
+    // Para Inter, Roboto e Lato, usaremos 'Roboto' que tem suporte a acentos.
+
+    doc.setFont(pdfFontName);
+    doc.setFontSize(11);
 
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const usableWidth = pageWidth - 2 * margin;
-
-    doc.setFontSize(11);
 
     const lines = doc.splitTextToSize(content, usableWidth);
     
