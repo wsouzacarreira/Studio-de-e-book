@@ -1,5 +1,5 @@
 import { EbookForm } from '../types';
-import { supabase } from '../lib/supabaseClient'; // Importa o cliente Supabase real
+import { supabase } from '../src/lib/supabaseClient'; // Caminho corrigido
 
 export const saveEbook = async (formData: EbookForm, content: string): Promise<{ success: true }> => {
   const dataToSave = {
