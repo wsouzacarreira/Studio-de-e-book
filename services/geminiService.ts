@@ -2,7 +2,7 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { EbookForm } from '../types'; // Removed Source from import
 
 export const generateEbookContent = async (formData: EbookForm): Promise<{ content: string }> => { // Adjusted return type
-  if (!process.env.API_KEY) {
+  if (!import.meta.env.GEMINI_API_KEY) {
     return Promise.resolve({
       content: "API Key não configurada. Por favor, adicione sua chave API para testar a funcionalidade. Este é um conteúdo de exemplo para demonstração, gerado com a nova estrutura.\n\nCapa\n\nTítulo: Um Guia de Exemplo\n\nSubtítulo: Demonstrando a nova estrutura de prompt\n\nPrefácio\n\nEste e-book serve como uma demonstração da estrutura aprimorada...",
       // Removed sources from the mock return
